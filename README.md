@@ -1,2 +1,2 @@
-# G4Hunter
-Gene Analyze
+# ISEAscore
+基因序列分析算法
