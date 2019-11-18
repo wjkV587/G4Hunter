@@ -1,4 +1,4 @@
 
 #!/bin/bash
-cd /home/G4hunter
-nohup python3 gscore.py > run.log 2>&1 &
+cd /home/wangjunkai/ISEAscore
+nohup python3 g4score.py > run.log 2>&1 &
