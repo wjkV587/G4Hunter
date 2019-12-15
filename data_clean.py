@@ -42,11 +42,42 @@ def upload_file(request):
     else:
         return False
 
+def ReadFastaFileData():
+    #读Mus.fatsa
+    with open('Caenorhabditis elegans.fasta') as f:
+        text1 = f.read()
+    with open('Drosophila melanogaster.fasta') as f:
+        text2 = f.read()
+    with open('Homo sapiens.fasta') as f:
+        text3 = f.read()
+    with open('Mus musculus.fasta') as f:
+        text4 = f.read()
+    with open('Rattus norvegicus.fasta') as f:
+        text5 = f.read()
+    with open('Xenopus tropicalis.fasta') as f:
+        text6 = f.read()
+    return text1 + text2 + text3 + text4 + text5 + text6
+
+def MatchGeneSequenceByGeneID(geneID,text):
+    #text = ReadFastaFileData()
+    text_list = text.split('>')
+    for i,j in enumerate(text_list):
+        #print(i)
+        if(i==0):
+            continue
+        str_arr = j.split('\n',1)
+        str1 = str_arr[0] #提取空格和引号之前的基因名称
+        #print(str1)
+        str1 = re.findall(r'\t(.+?);',str1)[0]
+        #print(str1)
+        str2 = str_arr[1].replace('\n','').replace('\r','')
+        if(str1 == geneID):
+            print(str1,'=',str2)
+            return str2
 
 def allowed_file(filename):
     # 获取文件扩展名，以'.'为右分割然后取第二个值
     return '.' in filename and filename.rsplit('.',1)[1].lower() in allow_format
 
 if (__name__ == '__main__'):
-    f = allowed_file('aaa.fasta')
-    print(f)
+    MatchGeneSequenceByGeneID('ENSG00000211459','')
