@@ -25,6 +25,7 @@ app = Flask(__name__)
 
 # function : I motif
 def I_motif(str):
+    print(str)
     str_s = str
     score = []
     score_per = []
@@ -149,7 +150,7 @@ def translate(str):
             i = i+1
 
     #str_sp = re.sub(' +',' ',str);
-    print('第1步：\n',score)
+    #print('第1步：\n',score)
     return score
 
 #迭代,重叠融合
@@ -214,7 +215,7 @@ def calculate_score(str,windowed_value,threshold):
     ISEAHscore_list = []
     score_per = []
     flag = 1
-    #print('调试=',ISEAHscore)
+    print('调试=',ISEAHscore)
 
     # 进行序列的划分，每一段序列的值都需要大于threshold值
     for i,x in enumerate(ISEAHscore):    
@@ -233,21 +234,24 @@ def calculate_score(str,windowed_value,threshold):
                 dic['sequence_size'] = len(dic['sequence'])
                 #dic['ISEAHscore(windows=25)']=score_per
                 array = I_motif(dic['sequence'])
-                dic['ISEAscore'] = sum(array)/len(array)
-                data.append(dic)
+                dic['ISEAscore'] = abs(sum(array)/len(array))
+                if(dic['ISEAscore'] >= threshold):
+                    data.append(dic)
                 dic = {}
             score_per = []
     data_json['data_view']=data #包含重叠
     data_copy = copy.deepcopy(data)
 
-    #print(ISEAHscore_list)
+    print(ISEAHscore_list)
 
     #迭代，进行重叠融合
     data_copy = deduplication(data_copy)
 
     #序列首尾规范限制
     for x in data_copy:
+        
         seq = x['sequence']
+        print(seq)
         l = 0
         r = len(seq)-1
         #从第一个为G的开始（‘首’C开头）
@@ -262,17 +266,27 @@ def calculate_score(str,windowed_value,threshold):
                 r = r - 1
             else:
                 break
-        
+        if(l>=r):
+            l=0
+            r=len(seq)-1
+        print(l,r+1)
+
         x["sequence"] = seq[l:r+1]
         #x["sequence_size"] = len(x['sequence'])
         x["start"] = x['start']+l
         x["end"] = x['end'] - (len(seq)-1-r)
+        print(x['sequence'])
         arr = I_motif(x['sequence'])
-        x["ISEAscore"] = sum(arr)/len(arr)
+        print(arr)
+        x['sequence_size'] = len(x['sequence'])
+        x["ISEAscore"] = abs(sum(arr)/len(arr))
+        print(4)
 
     #overlaps 去重叠
+    
 
     data_json["data_view_overlaps"] = data_copy
+    print(data_json)
     return data_json;
 
 @app.route('/getISEAscore',methods = ['POST'])
@@ -315,9 +329,10 @@ def getISEAscoreByID():
             gene_ID = json_data['gene_ID'] #获取基因ID
             sequence = MatchGeneSequenceByGeneID(gene_ID,text)
             resp = index(request,1,sequence,gene_ID) #单次查询,不处理翻页
+            print(resp)
             return resp
         except:
-            resp = make_response({"msg":"服务器错误"})
+            resp = make_response('{"msg":"服务器错误"}')
             resp.status = '403'
             return resp
 
@@ -359,8 +374,9 @@ def index(request,type,seq=None,gene_ID=None):
             resp = make_response({"msg":"序列内容包含除ATGC外的其它字符"})
             resp.statu = '403'
             return resp
-        
+        print(1)
         res = calculate_score(sequence,windowed_value,threshold)
+        print(res)
         #res = json.dumps(res)
         
         temp = {}
